@@ -1,0 +1,22 @@
+name: readme-bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-readme-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out this repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.5"
+
+      - name: Run README Bot
+        run: go run ./cmd/readme-bot
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
