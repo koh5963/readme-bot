@@ -28,6 +28,10 @@ func LoadRules(section string) (string, error) {
 		}
 
 		sectionStr = readSection(string(file), section)
+		if sectionStr == "" {
+			sectionStr = readSection(RulesMd, section)
+			return sectionStr, errors.New("no rule section, fallback to default rules")
+		}
 		return sectionStr, nil
 	}
 
@@ -36,7 +40,8 @@ func LoadRules(section string) (string, error) {
 }
 
 func readSection(rules string, section string) string {
-	start := strings.Index(strings.ToLower(rules), fmt.Sprintf("## %s", section))
+	needle := strings.ToLower(fmt.Sprintf("## %s", section))
+	start := strings.Index(strings.ToLower(rules), needle)
 	if start == -1 {
 		return "" // not found
 	}
@@ -48,7 +53,7 @@ func readSection(rules string, section string) string {
 
 	var out []string
 	for _, l := range lines[1:] { // 1行目は "## readme"
-		if strings.HasPrefix(l, "## ") {
+		if strings.HasPrefix(strings.ToLower(l), "## ") {
 			break
 		}
 		out = append(out, l)

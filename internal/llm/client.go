@@ -2,18 +2,24 @@ package llm
 
 import (
 	"context"
+	_ "embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 
-	"github.com/sashabaranov/go-openai"
+	response "github.com/koh5963/readme-bot/internal/models/readme"
+	openai "github.com/sashabaranov/go-openai"
 )
 
+//go:embed templates/readme_prompt_template.txt
+var Template string
+
 // TODO: langchaingoなどでOPENAI互換のLLM以外にも対応していく
-func CallLlm(rule string) (string, error) {
+func CallLlm(diff, rule string) (response.Response, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
-		return "", errors.New("missing OPENAI_API_KEY environment variable")
+		return response.Response{}, errors.New("missing OPENAI_API_KEY environment variable")
 	}
 	client := openai.NewClient(apiKey)
 	resp, err := client.CreateChatCompletion(
@@ -23,15 +29,19 @@ func CallLlm(rule string) (string, error) {
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: rule, // TODO: プロンプトテンプレートをJSONで用意する（モノレポ対応準備）
+					Content: fmt.Sprint(Template, diff, rule),
 				},
 			},
 		},
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("api call is failed %w", err)
+		return response.Response{}, fmt.Errorf("api call is failed %w", err)
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	var resJson response.Response
+	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &resJson); err != nil {
+		return response.Response{}, fmt.Errorf("failed to parse LLM JSON: %w", err)
+	}
+	return resJson, nil
 }
