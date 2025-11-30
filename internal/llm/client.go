@@ -1,3 +1,5 @@
+// Package llm provides a LLM client with minimal API methods.
+// This package is used by the README-generation agent to analyze GitHub diff.
 package llm
 
 import (
@@ -15,8 +17,11 @@ import (
 //go:embed templates/readme_prompt_template.txt
 var Template string
 
-// TODO: langchaingoなどでOPENAI互換のLLM以外にも対応していく
-func CallLlm(diff, rule string) (response.Response, error) {
+// CallLLM sends a diff and rule to an LLM and returns its analysis result.
+// diff is the GitHub diff context.
+// rule is a custom rule used to analyze the diff.
+// TODO: Support non-OpenAI compatible LLMs (e.g. via langchaingo).
+func CallLLM(diff, rule string) (response.Response, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return response.Response{}, errors.New("missing OPENAI_API_KEY environment variable")
@@ -25,11 +30,11 @@ func CallLlm(diff, rule string) (response.Response, error) {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT4oMini, // TODO: 将来的には環境変数に設定可とする
+			Model: openai.GPT4oMini,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: fmt.Sprint(Template, diff, rule),
+					Content: fmt.Sprintf(Template, diff, rule),
 				},
 			},
 		},

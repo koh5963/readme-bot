@@ -12,6 +12,9 @@ import (
 //go:embed rules/RULES.md
 var RulesMd string
 
+// LoadRules reads a RULES.md file and extracts the specified section.
+// If the "RULES_PATH" environment variable is set, it reads from
+// "{RULES_PATH}/RULES.md", otherwise it falls back to "RULES.md".
 func LoadRules(section string) (string, error) {
 	var sectionStr string
 	if path := os.Getenv("RULES_PATH"); path != "" {
@@ -39,20 +42,23 @@ func LoadRules(section string) (string, error) {
 	return sectionStr, nil
 }
 
+// readSection extracts a section from a RULES.md-style text.
+// rules is the full content of RULES.md,
+// section is a header string such as "## readme", "## report", or "## review".
+// It returns the text following the given section header, excluding the header
+// itself, up to the next "## " header or the end of the document.
 func readSection(rules string, section string) string {
 	needle := strings.ToLower(fmt.Sprintf("## %s", section))
 	start := strings.Index(strings.ToLower(rules), needle)
 	if start == -1 {
 		return "" // not found
 	}
-	// スタート位置から先だけ抽出
 	rest := rules[start:]
 
-	// rest を行 split
 	lines := strings.Split(rest, "\n")
 
 	var out []string
-	for _, l := range lines[1:] { // 1行目は "## readme"
+	for _, l := range lines[1:] {
 		if strings.HasPrefix(strings.ToLower(l), "## ") {
 			break
 		}
