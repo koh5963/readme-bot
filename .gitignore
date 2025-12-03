@@ -31,3 +31,7 @@ go.work.sum
 # .idea/
 .vscode/
 all-go-files.md
+.env
+.env.*
+README.md.tmp
+_README.md

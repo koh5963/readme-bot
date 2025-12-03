@@ -11,6 +11,7 @@ import (
 	llmclient "github.com/koh5963/readme-bot/internal/llm"
 	"github.com/koh5963/readme-bot/internal/models/common"
 	rules "github.com/koh5963/readme-bot/internal/rules"
+	utils "github.com/koh5963/readme-bot/internal/utils"
 )
 
 func main() {
@@ -28,7 +29,6 @@ func main() {
 		fmt.Println(paramErr)
 		return
 	}
-	fmt.Println(accessInfo)
 	diff, diffErr := ghclient.GetDiff(accessInfo)
 	if diffErr != nil {
 		fmt.Println(diffErr)
@@ -43,7 +43,7 @@ func main() {
 	}
 	fmt.Println(resp)
 
-	// TODO: Rewrite README.md and CHANGELOG.md from LLM Response
+	utils.RewriteReadme(resp.ReadmeLatestChange, "## latest change")
 }
 
 func getGitHubAccessInfo() (common.GitHubAccessInfo, error) {
