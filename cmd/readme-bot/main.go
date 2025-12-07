@@ -2,20 +2,22 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"os"
 
+	"github.com/koh5963/readme-bot/internal/constants"
 	ghclient "github.com/koh5963/readme-bot/internal/github"
 	llmclient "github.com/koh5963/readme-bot/internal/llm"
 	"github.com/koh5963/readme-bot/internal/models/common"
-	rules "github.com/koh5963/readme-bot/internal/rules"
-	utils "github.com/koh5963/readme-bot/internal/utils"
+	response "github.com/koh5963/readme-bot/internal/models/readme"
+	"github.com/koh5963/readme-bot/internal/rules"
+	"github.com/koh5963/readme-bot/internal/utils"
 )
 
 func main() {
-	fmt.Println("Hello Readme Bot!")
 	// Load RULES.md
 	rule, err := rules.LoadRules("readme")
 	if err != nil {
@@ -23,7 +25,7 @@ func main() {
 		fmt.Println("rule load warning, use default rule: ", err)
 	}
 
-	// TODO: Get Github diff from Pull Request
+	// Get Github diff from Pull Request
 	accessInfo, paramErr := getGitHubAccessInfo()
 	if paramErr != nil {
 		fmt.Println(paramErr)
@@ -36,14 +38,20 @@ func main() {
 	}
 
 	// LLM API CALL
-	resp, llmErr := llmclient.CallLLM(diff, rule) // TODO: Diff param setting
+	resp, llmErr := llmclient.CallLLM(constants.BotTypeReadme, diff, rule)
 	if llmErr != nil {
 		fmt.Println(llmErr)
 		return
 	}
 	fmt.Println(resp)
 
-	utils.RewriteReadme(resp.ReadmeLatestChange, "## latest change")
+	var resJson response.Response
+	if err := json.Unmarshal([]byte(resp), &resJson); err != nil {
+		fmt.Println(fmt.Errorf("failed to parse LLM JSON: %w", err))
+		return
+	}
+
+	utils.RewriteReadme(resJson.ReadmeLatestChange, "## latest change")
 }
 
 func getGitHubAccessInfo() (common.GitHubAccessInfo, error) {
