@@ -18,7 +18,7 @@ import (
 
 func main() {
 	// Load RULES.md
-	rule, err := rules.LoadRules("readme")
+	rule, err := rules.LoadRules("review")
 	if err != nil {
 		// using general rule
 		fmt.Println("rule load warning, use default rule: ", err)
