@@ -16,7 +16,17 @@ jobs:
         with:
           go-version: "1.24.0"
 
+      - name: Debug commit
+        run: |
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          git log -1 --oneline
+
       - name: Run README Bot
-        run: go run ./cmd/readme-bot
+        run: |
+          go run ./cmd/readme-bot \
+             -owner koh5963 \
+             -repo browser-use-test \
+             -number 7 
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
