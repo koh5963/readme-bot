@@ -25,8 +25,8 @@ jobs:
         run: |
           go run ./cmd/readme-bot \
              -owner koh5963 \
-             -repo browser-use-test \
-             -number 7 
+             -repo readme-bot \
+             -number 1
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
