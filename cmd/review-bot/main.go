@@ -12,14 +12,13 @@ import (
 	ghclient "github.com/koh5963/readme-bot/internal/github"
 	llmclient "github.com/koh5963/readme-bot/internal/llm"
 	"github.com/koh5963/readme-bot/internal/models/common"
-	response "github.com/koh5963/readme-bot/internal/models/readme"
+	response "github.com/koh5963/readme-bot/internal/models/review"
 	"github.com/koh5963/readme-bot/internal/rules"
-	"github.com/koh5963/readme-bot/internal/utils"
 )
 
 func main() {
 	// Load RULES.md
-	rule, err := rules.LoadRules("readme")
+	rule, err := rules.LoadRules("review")
 	if err != nil {
 		// using general rule
 		fmt.Println("rule load warning, use default rule: ", err)
@@ -38,7 +37,7 @@ func main() {
 	}
 
 	// LLM API CALL
-	resp, llmErr := llmclient.CallLLM(constants.BotTypeReadme, diff, rule)
+	resp, llmErr := llmclient.CallLLM(constants.BotTypeReview, diff, rule)
 	if llmErr != nil {
 		fmt.Println(llmErr)
 		return
@@ -51,7 +50,8 @@ func main() {
 		return
 	}
 
-	utils.RewriteReadme(resJson.ReadmeLatestChange, "## latest change")
+	// TODO: 最後どうしようかな
+	fmt.Println(resp)
 }
 
 func getGitHubAccessInfo() (common.GitHubAccessInfo, error) {
